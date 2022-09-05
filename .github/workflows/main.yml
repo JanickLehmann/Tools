@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy-to-github-pages:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    
+    - name: Publish .NET Core Project
+      run: dotnet publish Tools.csproj -c Release -o release --nologo
+    
+    # change base to match GitHub pages subdirectory
+    - name: Change base-tag in index.html from / to Tools
+      run: sed -i 's/<base href="\/" \/>/<base href="\/Tools\/" \/>/g' release/wwwroot/index.html
+    
+    # fix 404 errors
+    - name: copy index.html to 404.html
+      run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+    # add .nojekyll file to tell GitHub pages to not treat this as a Jekyll project. (Allow files and folders starting with an underscore)
+    - name: Add .nojekyll file
+      run: touch release/wwwroot/.nojekyll
+      
+    - name: Commit wwwroot to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.4.0
+      with:
+        token: ${{ github.token }}
+        branch: gh-pages
+        folder: release/wwwroot
