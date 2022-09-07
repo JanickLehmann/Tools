@@ -1,0 +1,18 @@
+﻿@page "/cryptography/rsa"
+
+@using System.Numerics
+@using System.Security.Cryptography
+
+<h3>RSA Encryption</h3>
+
+<p role="status">Current count: @prime</p>
+<button class="btn btn-primary" @onclick="ProbablePrime">Random Prime</button>
+
+@code {
+    private BigInteger prime;
+
+    private void ProbablePrime()
+    {
+        prime = BigIntegerExtensions.RandomPrime(2048, 10, RandomNumberGenerator.Create());
+    }
+}
